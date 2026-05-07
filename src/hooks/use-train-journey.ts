@@ -88,8 +88,33 @@ export function useTrainJourney() {
     return () => clearInterval(interval);
   }, [isStarted, calculatedAlarmTime]);
 
-  const triggerNotification = useCallback(() => {
-    if (typeof window !== "undefined" && "Notification" in window) {
+  const triggerNotification = useCallback(async () => {
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      const registration = await navigator.serviceWorker.ready;
+      if (Notification.permission === "granted") {
+        registration.showNotification("🚆 TrainAlarm: Wake Up!", {
+          body: `Approaching ${alarmStation?.name || "the next station"}. Next is ${endStation?.name}.`,
+          icon: "/next.svg",
+          badge: "/next.svg",
+          tag: "train-alarm",
+          requireInteraction: true,
+          vibrate: [200, 100, 200],
+        });
+      } else {
+        const permission = await Notification.requestPermission();
+        if (permission === "granted") {
+          registration.showNotification("🚆 TrainAlarm: Wake Up!", {
+            body: `Approaching ${alarmStation?.name || "the next station"}. Next is ${endStation?.name}.`,
+            icon: "/next.svg",
+            badge: "/next.svg",
+            tag: "train-alarm",
+            requireInteraction: true,
+            vibrate: [200, 100, 200],
+          });
+        }
+      }
+    } else if (typeof window !== "undefined" && "Notification" in window) {
+      // Fallback for browsers without Service Worker but with Notification API
       if (Notification.permission === "granted") {
         new Notification("🚆 TrainAlarm: Wake Up!", {
           body: `Approaching ${alarmStation?.name || "the next station"}. Next is ${endStation?.name}.`,
@@ -102,13 +127,35 @@ export function useTrainJourney() {
     }
   }, [alarmStation, endStation]);
 
-  const testNotification = () => {
-    if (Notification.permission === "granted") {
-      new Notification("🔔 Test Notification", {
-        body: "Notifications are working correctly!",
-      });
-    } else {
-      Notification.requestPermission();
+  const testNotification = async () => {
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      const registration = await navigator.serviceWorker.ready;
+      if (Notification.permission === "granted") {
+        registration.showNotification("🔔 Test Notification", {
+          body: "Notifications are working correctly!",
+          icon: "/next.svg",
+          badge: "/next.svg",
+          vibrate: [100, 50, 100],
+        });
+      } else {
+        const permission = await Notification.requestPermission();
+        if (permission === "granted") {
+          registration.showNotification("🔔 Test Notification", {
+            body: "Notifications are working correctly!",
+            icon: "/next.svg",
+            badge: "/next.svg",
+            vibrate: [100, 50, 100],
+          });
+        }
+      }
+    } else if (typeof window !== "undefined" && "Notification" in window) {
+      if (Notification.permission === "granted") {
+        new Notification("🔔 Test Notification", {
+          body: "Notifications are working correctly!",
+        });
+      } else {
+        Notification.requestPermission();
+      }
     }
   };
 
