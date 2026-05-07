@@ -10,6 +10,16 @@ import { useState, useEffect } from "react";
 
 export default function TrainAlarmPage() {
   const journey = useTrainJourney();
+  const [accentColor, setAccentColor] = useState("orange"); // orange, blue, purple, cyan
+
+  const colorMap = {
+    orange: { bg: "bg-orange-500", text: "text-orange-500", border: "border-orange-500", shadow: "shadow-orange-500/30", ring: "focus:ring-orange-500/50" },
+    blue: { bg: "bg-blue-500", text: "text-blue-500", border: "border-blue-500", shadow: "shadow-blue-500/30", ring: "focus:ring-blue-500/50" },
+    purple: { bg: "bg-purple-500", text: "text-purple-500", border: "border-purple-500", shadow: "shadow-purple-500/30", ring: "focus:ring-purple-500/50" },
+    cyan: { bg: "bg-cyan-500", text: "text-cyan-500", border: "border-cyan-500", shadow: "shadow-cyan-500/30", ring: "focus:ring-cyan-500/50" },
+  };
+
+  const activeColor = colorMap[accentColor as keyof typeof colorMap];
 
   // Helper to format seconds
   const formatTime = (seconds: number) => {
@@ -56,11 +66,22 @@ export default function TrainAlarmPage() {
                 ENABLE NOTIFICATIONS
               </Button>
             )}
-            <div className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center backdrop-blur-md">
-              <Train className="w-5 h-5 text-orange-500" />
+            <div className={`h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center backdrop-blur-md`}>
+              <Train className={`w-5 h-5 ${activeColor.text}`} />
             </div>
           </div>
         </header>
+
+        {/* Theme Selector */}
+        <div className="flex justify-center gap-4 mb-8">
+          {Object.keys(colorMap).map((color) => (
+            <button
+              key={color}
+              onClick={() => setAccentColor(color)}
+              className={`w-6 h-6 rounded-full ${colorMap[color as keyof typeof colorMap].bg} ${accentColor === color ? 'ring-2 ring-white ring-offset-2 ring-offset-black' : 'opacity-40'}`}
+            />
+          ))}
+        </div>
 
         <AnimatePresence mode="wait">
           {!journey.isStarted ? (
@@ -139,7 +160,7 @@ export default function TrainAlarmPage() {
                 <Button
                   onClick={journey.startJourney}
                   disabled={!journey.startStation || !journey.endStation || !journey.departureTime || !journey.arrivalTime}
-                  className="w-full h-16 rounded-[1.5rem] bg-orange-500 hover:bg-orange-600 text-black font-black text-lg shadow-[0_0_30px_rgba(249,115,22,0.3)] transition-all active:scale-95 disabled:opacity-20 mt-4"
+                  className={`w-full h-16 rounded-[1.5rem] ${activeColor.bg} hover:brightness-110 text-black font-black text-lg shadow-[0_0_30px_rgba(0,0,0,0.3)] transition-all active:scale-95 disabled:opacity-20 mt-4`}
                 >
                   START MONITORING
                 </Button>
@@ -168,7 +189,7 @@ export default function TrainAlarmPage() {
                 {/* Progress Bar Background */}
                 <div className="absolute bottom-0 left-0 h-1 bg-white/5 w-full" />
                 <motion.div 
-                  className="absolute bottom-0 left-0 h-1 bg-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.8)]"
+                  className={`absolute bottom-0 left-0 h-1 ${activeColor.bg} shadow-[0_0_15px_rgba(0,0,0,0.8)]`}
                   initial={{ width: 0 }}
                   animate={{ width: `${journey.progress}%` }}
                 />
@@ -182,11 +203,11 @@ export default function TrainAlarmPage() {
                     </div>
                     <div className="pt-4">
                       <div className="bg-white/5 p-2 rounded-full border border-white/10">
-                        <ChevronRight className="w-6 h-6 text-orange-500" />
+                        <ChevronRight className={`w-6 h-6 ${activeColor.text}`} />
                       </div>
                     </div>
                     <div className="text-right space-y-1">
-                      <div className="text-4xl font-black tracking-tighter text-orange-500">{journey.arrivalTime}</div>
+                      <div className={`text-4xl font-black tracking-tighter ${activeColor.text}`}>{journey.arrivalTime}</div>
                       <div className="text-lg font-bold">{journey.endStation?.name}</div>
                       <div className="text-[10px] font-black text-white/20 uppercase tracking-widest">ARRIVAL</div>
                     </div>
@@ -195,10 +216,10 @@ export default function TrainAlarmPage() {
                   <div className="flex flex-col items-center justify-center py-6 border-y border-white/5">
                     <div className="text-sm font-bold text-white/30 uppercase tracking-[0.2em] mb-2">Estimated Alarm</div>
                     <div className="text-5xl font-black tracking-tighter flex items-center gap-3">
-                      <Bell className="w-8 h-8 text-orange-500 animate-bounce" />
+                      <Bell className={`w-8 h-8 ${activeColor.text} animate-bounce`} />
                       {journey.calculatedAlarmTime?.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
                     </div>
-                    <div className="text-xs font-bold text-orange-500/50 mt-2">
+                    <div className={`text-xs font-bold ${activeColor.text} opacity-50 mt-2`}>
                       AT {journey.alarmStation?.name} STATION
                     </div>
                   </div>
@@ -226,7 +247,7 @@ export default function TrainAlarmPage() {
                 
                 <div className="flex flex-col items-center gap-2 mt-4 px-6 text-center">
                   {journey.isWakeLockActive ? (
-                    <Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/20 py-1 px-4 rounded-full text-[10px] font-black">
+                    <Badge variant="outline" className={`${activeColor.bg}/10 ${activeColor.text} ${activeColor.border}/20 py-1 px-4 rounded-full text-[10px] font-black`}>
                       SLEEP PREVENTION ACTIVE
                     </Badge>
                   ) : (
@@ -258,7 +279,7 @@ export default function TrainAlarmPage() {
             <motion.div
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
-              className="relative bg-orange-500 text-black p-10 rounded-[3rem] w-full max-w-sm text-center shadow-[0_0_100px_rgba(249,115,22,0.5)]"
+              className={`relative ${activeColor.bg} text-black p-10 rounded-[3rem] w-full max-w-sm text-center shadow-[0_0_100px_rgba(0,0,0,0.5)]`}
             >
               <motion.div
                 animate={{ rotate: [0, 10, -10, 10, -10, 0] }}
