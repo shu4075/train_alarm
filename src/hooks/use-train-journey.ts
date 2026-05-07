@@ -166,7 +166,7 @@ export function useTrainJourney() {
           tag: "train-alarm",
           requireInteraction: true,
           vibrate: [200, 100, 200],
-        });
+        } as any);
       }
     }
 
@@ -211,7 +211,7 @@ export function useTrainJourney() {
       registration.showNotification("🔔 Test Local Notification", {
         body: "Local SW notification is working!",
         icon: "/next.svg",
-      });
+      } as any);
     }
   };
 
