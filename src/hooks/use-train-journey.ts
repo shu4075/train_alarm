@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Station, CHUO_LINE_STATIONS } from "@/lib/stations";
+import { requestForToken, onMessageListener } from "@/lib/firebase";
 
 export function useTrainJourney() {
   const [startStation, setStartStation] = useState<Station | null>(null);
@@ -12,6 +13,7 @@ export function useTrainJourney() {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isAlarmActive, setIsAlarmActive] = useState(false);
   const [isWakeLockActive, setIsWakeLockActive] = useState(false);
+  const [fcmToken, setFcmToken] = useState<string | null>(null);
   
   const notificationTriggered = useRef(false);
   const wakeLockRef = useRef<any>(null);
@@ -136,7 +138,24 @@ export function useTrainJourney() {
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [isStarted, requestWakeLock]);
 
+  // Request FCM Token
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      requestForToken().then(token => {
+        if (token) setFcmToken(token);
+      });
+
+      onMessageListener().then((payload: any) => {
+        console.log("Foreground message: ", payload);
+        if (payload.notification) {
+          setIsAlarmActive(true);
+        }
+      });
+    }
+  }, []);
+
   const triggerNotification = useCallback(async () => {
+    // 1. Local Notification (Existing logic)
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       const registration = await navigator.serviceWorker.ready;
       if (Notification.permission === "granted") {
@@ -148,62 +167,51 @@ export function useTrainJourney() {
           requireInteraction: true,
           vibrate: [200, 100, 200],
         });
-      } else {
-        const permission = await Notification.requestPermission();
-        if (permission === "granted") {
-          registration.showNotification("🚆 TrainAlarm: Wake Up!", {
-            body: `Approaching ${alarmStation?.name || "the next station"}. Next is ${endStation?.name}.`,
-            icon: "/next.svg",
-            badge: "/next.svg",
-            tag: "train-alarm",
-            requireInteraction: true,
-            vibrate: [200, 100, 200],
-          });
-        }
-      }
-    } else if (typeof window !== "undefined" && "Notification" in window) {
-      // Fallback for browsers without Service Worker but with Notification API
-      if (Notification.permission === "granted") {
-        new Notification("🚆 TrainAlarm: Wake Up!", {
-          body: `Approaching ${alarmStation?.name || "the next station"}. Next is ${endStation?.name}.`,
-          requireInteraction: true,
-          tag: "train-alarm"
-        });
-      } else {
-        Notification.requestPermission();
       }
     }
-  }, [alarmStation, endStation]);
+
+    // 2. Server-side Push (New logic for background reliability)
+    if (fcmToken) {
+      try {
+        await fetch("/api/notify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            token: fcmToken,
+            title: "🚆 TrainAlarm: Wake Up!",
+            body: `Approaching ${alarmStation?.name || "the next station"}. Next is ${endStation?.name}.`,
+          }),
+        });
+      } catch (err) {
+        console.error("Failed to send server-side push:", err);
+      }
+    }
+  }, [alarmStation, endStation, fcmToken]);
 
   const testNotification = async () => {
+    if (fcmToken) {
+      try {
+        await fetch("/api/notify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            token: fcmToken,
+            title: "🔔 Test Push Notification",
+            body: "FCM server-side push is working!",
+          }),
+        });
+      } catch (err) {
+        console.error("Failed to send test push:", err);
+      }
+    }
+
+    // Also show local test
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       const registration = await navigator.serviceWorker.ready;
-      if (Notification.permission === "granted") {
-        registration.showNotification("🔔 Test Notification", {
-          body: "Notifications are working correctly!",
-          icon: "/next.svg",
-          badge: "/next.svg",
-          vibrate: [100, 50, 100],
-        });
-      } else {
-        const permission = await Notification.requestPermission();
-        if (permission === "granted") {
-          registration.showNotification("🔔 Test Notification", {
-            body: "Notifications are working correctly!",
-            icon: "/next.svg",
-            badge: "/next.svg",
-            vibrate: [100, 50, 100],
-          });
-        }
-      }
-    } else if (typeof window !== "undefined" && "Notification" in window) {
-      if (Notification.permission === "granted") {
-        new Notification("🔔 Test Notification", {
-          body: "Notifications are working correctly!",
-        });
-      } else {
-        Notification.requestPermission();
-      }
+      registration.showNotification("🔔 Test Local Notification", {
+        body: "Local SW notification is working!",
+        icon: "/next.svg",
+      });
     }
   };
 
@@ -239,5 +247,6 @@ export function useTrainJourney() {
     routeStations,
     alarmStation,
     isWakeLockActive,
+    fcmToken,
   };
 }
