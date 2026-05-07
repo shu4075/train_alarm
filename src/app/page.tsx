@@ -217,10 +217,28 @@ export default function TrainAlarmPage() {
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex items-center justify-center gap-3"
+                className="flex flex-col items-center justify-center gap-3"
               >
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-sm font-bold text-white/40 uppercase tracking-widest">Monitoring Journey</span>
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-sm font-bold text-white/40 uppercase tracking-widest">Monitoring Journey</span>
+                </div>
+                
+                <div className="flex flex-col items-center gap-2 mt-4 px-6 text-center">
+                  {journey.isWakeLockActive ? (
+                    <Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/20 py-1 px-4 rounded-full text-[10px] font-black">
+                      SLEEP PREVENTION ACTIVE
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/20 py-1 px-4 rounded-full text-[10px] font-black">
+                      SLEEP PREVENTION INACTIVE
+                    </Badge>
+                  )}
+                  <p className="text-[10px] text-white/20 font-bold uppercase tracking-tighter leading-tight max-w-[240px]">
+                    Keep this tab open for the most reliable alarm. <br />
+                    Background notifications may be delayed by the OS.
+                  </p>
+                </div>
               </motion.div>
             </motion.div>
           )}

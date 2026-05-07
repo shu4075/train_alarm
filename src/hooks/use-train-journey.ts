@@ -11,8 +11,10 @@ export function useTrainJourney() {
   const [isStarted, setIsStarted] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isAlarmActive, setIsAlarmActive] = useState(false);
+  const [isWakeLockActive, setIsWakeLockActive] = useState(false);
   
   const notificationTriggered = useRef(false);
+  const wakeLockRef = useRef<any>(null);
 
   // Determine the route stations
   const routeStations = useMemo(() => {
@@ -87,6 +89,52 @@ export function useTrainJourney() {
     }, 1000);
     return () => clearInterval(interval);
   }, [isStarted, calculatedAlarmTime]);
+
+  // Wake Lock Management
+  const requestWakeLock = useCallback(async () => {
+    if (typeof window !== "undefined" && "wakeLock" in navigator) {
+      try {
+        wakeLockRef.current = await (navigator as any).wakeLock.request("screen");
+        setIsWakeLockActive(true);
+        console.log("Wake Lock is active");
+        
+        wakeLockRef.current.addEventListener("release", () => {
+          setIsWakeLockActive(false);
+          console.log("Wake Lock was released");
+        });
+      } catch (err) {
+        console.error(`${(err as Error).name}, ${(err as Error).message}`);
+      }
+    }
+  }, []);
+
+  const releaseWakeLock = useCallback(() => {
+    if (wakeLockRef.current) {
+      wakeLockRef.current.release();
+      wakeLockRef.current = null;
+      setIsWakeLockActive(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isStarted) {
+      requestWakeLock();
+    } else {
+      releaseWakeLock();
+    }
+    return () => releaseWakeLock();
+  }, [isStarted, requestWakeLock, releaseWakeLock]);
+
+  // Re-request wake lock when page becomes visible again
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (wakeLockRef.current !== null && document.visibilityState === "visible" && isStarted) {
+        requestWakeLock();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [isStarted, requestWakeLock]);
 
   const triggerNotification = useCallback(async () => {
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
@@ -190,5 +238,6 @@ export function useTrainJourney() {
     testNotification,
     routeStations,
     alarmStation,
+    isWakeLockActive,
   };
 }
