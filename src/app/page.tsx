@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 export default function TrainAlarmPage() {
   const journey = useTrainJourney();
   const [accentColor, setAccentColor] = useState("orange"); // orange, blue, purple, cyan
+  const [lastSync, setLastSync] = useState<"none" | "syncing" | "success" | "error">("none");
 
   const colorMap = {
     orange: { bg: "bg-orange-500", text: "text-orange-500", border: "border-orange-500", shadow: "shadow-orange-500/30", ring: "focus:ring-orange-500/50" },
@@ -164,7 +165,16 @@ export default function TrainAlarmPage() {
                 </div>
 
                 <Button
-                  onClick={journey.startJourney}
+                  onClick={async () => {
+                    setLastSync('syncing');
+                    try {
+                      await journey.startJourney();
+                      setLastSync('success');
+                      setTimeout(() => setLastSync('none'), 3000);
+                    } catch (e) {
+                      setLastSync('error');
+                    }
+                  }}
                   disabled={!journey.startStation || !journey.endStation || !journey.departureTime || !journey.arrivalTime}
                   className={`w-full h-16 rounded-[1.5rem] ${activeColor.bg} hover:brightness-110 text-black font-black text-lg shadow-[0_0_30px_rgba(0,0,0,0.3)] transition-all active:scale-95 disabled:opacity-20 mt-4`}
                 >
@@ -192,6 +202,11 @@ export default function TrainAlarmPage() {
             >
               {/* Journey Card */}
               <div className="bg-gradient-to-br from-neutral-900 to-black border border-white/10 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
+                {/* Status Aura Glow */}
+                <div className={`absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[80px] opacity-30 transition-all duration-1000 ${
+                  lastSync === 'success' ? 'bg-blue-500' : journey.fcmToken ? 'bg-green-500' : 'bg-red-500'
+                }`} />
+
                 {/* Progress Bar Background */}
                 <div className="absolute bottom-0 left-0 h-1 bg-white/5 w-full" />
                 <motion.div 
@@ -207,10 +222,12 @@ export default function TrainAlarmPage() {
                       <div className="text-lg font-bold text-white/60">{journey.startStation?.name}</div>
                       <div className="text-[10px] font-black text-white/20 uppercase tracking-widest">DEPARTURE</div>
                     </div>
-                    <div className="pt-4">
+                    <div className="pt-4 flex flex-col items-center gap-1">
                       <div className="bg-white/5 p-2 rounded-full border border-white/10">
                         <ChevronRight className={`w-6 h-6 ${activeColor.text}`} />
                       </div>
+                      {lastSync === 'syncing' && <div className="w-4 h-4 border-2 border-t-transparent border-blue-500 rounded-full animate-spin" />}
+                      {lastSync === 'success' && <div className="text-[8px] font-bold text-blue-400 animate-bounce">SYNCED</div>}
                     </div>
                     <div className="text-right space-y-1">
                       <div className={`text-4xl font-black tracking-tighter ${activeColor.text}`}>{journey.arrivalTime}</div>
