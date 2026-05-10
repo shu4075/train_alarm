@@ -50,22 +50,13 @@ export default function TrainAlarmPage() {
           <div className="flex items-center gap-3">
             <Button 
               variant="ghost" 
-              size="sm" 
+              variant="outline" 
+              size="sm"
               onClick={journey.testNotification}
-              className="text-[10px] font-bold text-white/40 bg-white/5 hover:bg-white/10 rounded-full h-8"
+              className={`text-[10px] font-black tracking-widest ${journey.fcmToken ? 'border-green-500/50 text-green-500' : 'border-white/20 text-white/60'} rounded-full px-4`}
             >
-              TEST NOTIFY
+              {journey.fcmToken ? 'NOTIFICATIONS ON' : 'ENABLE NOTIFICATIONS'}
             </Button>
-            {typeof window !== 'undefined' && 'Notification' in window && Notification.permission !== 'granted' && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => Notification.requestPermission()}
-                className="text-[10px] font-bold text-orange-500 bg-orange-500/10 hover:bg-orange-500/20 rounded-full h-8 animate-pulse"
-              >
-                ENABLE NOTIFICATIONS
-              </Button>
-            )}
             <div className={`h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center backdrop-blur-md`}>
               <Train className={`w-5 h-5 ${activeColor.text}`} />
             </div>

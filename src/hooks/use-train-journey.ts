@@ -189,6 +189,14 @@ export function useTrainJourney() {
   }, [alarmStation, endStation, fcmToken]);
 
   const testNotification = async () => {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        alert("Notification permission denied. Please enable it in your browser settings.");
+        return;
+      }
+    }
+
     if (fcmToken) {
       try {
         await fetch("/api/notify", {
