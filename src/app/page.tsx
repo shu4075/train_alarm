@@ -72,6 +72,21 @@ export default function TrainAlarmPage() {
           </div>
         </header>
 
+        {/* FCM Status Indicator */}
+        <div className="flex justify-center mb-4">
+          {journey.fcmToken ? (
+            <div className="flex items-center gap-2 px-3 py-1 bg-green-500/10 rounded-full border border-green-500/20">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              <span className="text-[10px] font-black text-green-500 uppercase tracking-widest">Notification Ready</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 px-3 py-1 bg-yellow-500/10 rounded-full border border-yellow-500/20">
+              <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
+              <span className="text-[10px] font-black text-yellow-500 uppercase tracking-widest">Setting up notifications...</span>
+            </div>
+          )}
+        </div>
+
         {/* Theme Selector */}
         <div className="flex justify-center gap-4 mb-8">
           {Object.keys(colorMap).map((color) => (
