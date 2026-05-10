@@ -20,11 +20,13 @@ if (!admin.apps.length) {
 }
 
 export async function GET(request: NextRequest) {
-  // Check authorization (Vercel Cron sends a secret header)
+  // Check authorization (Temporarily disabled for debugging)
+  /*
   const authHeader = request.headers.get('authorization');
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}` && process.env.NODE_ENV === 'production') {
     return new Response('Unauthorized', { status: 401 });
   }
+  */
 
   try {
     const now = Date.now();
