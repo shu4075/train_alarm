@@ -215,11 +215,30 @@ export function useTrainJourney() {
     }
   };
 
-  const startJourney = useCallback(() => {
+  const startJourney = useCallback(async () => {
     setIsAlarmActive(false);
     notificationTriggered.current = false;
     setIsStarted(true);
-  }, []);
+
+    // Schedule background notification on server
+    if (fcmToken && calculatedAlarmTime) {
+      try {
+        await fetch("/api/schedule", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            token: fcmToken,
+            alarmTime: calculatedAlarmTime.getTime(),
+            title: "🚆 TrainAlarm: Wake Up!",
+            body: `Approaching ${alarmStation?.name || "the next station"}. Next is ${endStation?.name}.`,
+          }),
+        });
+        console.log("Alarm scheduled on server");
+      } catch (err) {
+        console.error("Failed to schedule alarm on server:", err);
+      }
+    }
+  }, [fcmToken, calculatedAlarmTime, alarmStation, endStation]);
 
   const stopJourney = useCallback(() => {
     setIsStarted(false);
