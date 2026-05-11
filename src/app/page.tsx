@@ -69,12 +69,12 @@ export default function TrainAlarmPage() {
           {journey.fcmToken ? (
             <div className="flex items-center gap-2 px-3 py-1 bg-green-500/10 rounded-full border border-green-500/20">
               <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-              <span className="text-[10px] font-black text-green-500 uppercase tracking-widest">Notification Ready</span>
+              <span className="text-[10px] font-black text-green-500 uppercase tracking-widest">通知準備完了</span>
             </div>
           ) : (
             <div className="flex items-center gap-2 px-3 py-1 bg-yellow-500/10 rounded-full border border-yellow-500/20">
               <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
-              <span className="text-[10px] font-black text-yellow-500 uppercase tracking-widest">Setting up notifications...</span>
+              <span className="text-[10px] font-black text-yellow-500 uppercase tracking-widest">通知をセットアップ中...</span>
             </div>
           )}
         </div>
@@ -100,97 +100,99 @@ export default function TrainAlarmPage() {
               className="space-y-6"
             >
               {/* Station Selection */}
-              <div className="bg-white/5 border border-white/10 rounded-[2rem] p-6 space-y-4 shadow-2xl backdrop-blur-xl">
-                <div className="relative">
-                  <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1 ml-1 block">
-                    Departure Station
-                  </label>
-                  <select
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 text-lg appearance-none focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all font-bold"
-                    value={journey.startStation?.id || ""}
-                    onChange={(e) => {
-                      const s = CHUO_LINE_STATIONS.find((st) => st.id === e.target.value);
-                      if (s) journey.setStartStation(s);
-                    }}
-                  >
-                    <option value="" disabled>Select station...</option>
-                    {CHUO_LINE_STATIONS.map((s) => (
-                      <option key={s.id} value={s.id} className="bg-neutral-900">{s.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="relative">
-                  <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1 ml-1 block">
-                    Arrival Station
-                  </label>
-                  <select
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 text-lg appearance-none focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all font-bold"
-                    value={journey.endStation?.id || ""}
-                    onChange={(e) => {
-                      const s = CHUO_LINE_STATIONS.find((st) => st.id === e.target.value);
-                      if (s) journey.setEndStation(s);
-                    }}
-                  >
-                    <option value="" disabled>Select destination...</option>
-                    {CHUO_LINE_STATIONS.map((s) => (
-                      <option key={s.id} value={s.id} className="bg-neutral-900">{s.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 pt-2">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest ml-1 block">
-                      Dep. Time
+              <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">
+                      出発駅
                     </label>
-                    <input
-                      type="time"
-                      value={journey.departureTime}
-                      onChange={(e) => journey.setDepartureTime(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all color-scheme-dark"
-                    />
+                    <div className="relative">
+                      <select 
+                        value={journey.startStation?.name || ""} 
+                        onChange={(e) => {
+                          const s = CHUO_LINE_STATIONS.find(st => st.name === e.target.value);
+                          if (s) journey.setStartStation(s);
+                        }}
+                        className={`w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 ${activeColor.ring} transition-all`}
+                      >
+                        <option value="" disabled>出発駅を選択</option>
+                        {CHUO_LINE_STATIONS.map(s => <option key={s.name} value={s.name}>{s.name}</option>)}
+                      </select>
+                      <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 pointer-events-none" />
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest ml-1 block">
-                      Arr. Time
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">
+                      目的駅
                     </label>
-                    <input
-                      type="time"
-                      value={journey.arrivalTime}
-                      onChange={(e) => journey.setArrivalTime(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all"
-                    />
+                    <div className="relative">
+                      <select 
+                        value={journey.endStation?.name || ""} 
+                        onChange={(e) => {
+                          const s = CHUO_LINE_STATIONS.find(st => st.name === e.target.value);
+                          if (s) journey.setEndStation(s);
+                        }}
+                        className={`w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 ${activeColor.ring} transition-all`}
+                      >
+                        <option value="" disabled>目的駅を選択</option>
+                        {CHUO_LINE_STATIONS.map(s => <option key={s.name} value={s.name}>{s.name}</option>)}
+                      </select>
+                      <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 pointer-events-none" />
+                    </div>
                   </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">
+                        発車時刻
+                      </label>
+                      <input
+                        type="time"
+                        value={journey.departureTime}
+                        onChange={(e) => journey.setDepartureTime(e.target.value)}
+                        className={`w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 ${activeColor.ring} transition-all`}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">
+                        到着時刻
+                      </label>
+                      <input
+                        type="time"
+                        value={journey.arrivalTime}
+                        onChange={(e) => journey.setArrivalTime(e.target.value)}
+                        className={`w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 ${activeColor.ring} transition-all`}
+                      />
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={async () => {
+                      setLastSync('syncing');
+                      try {
+                        await journey.startJourney();
+                        setLastSync('success');
+                        setTimeout(() => setLastSync('none'), 3000);
+                      } catch (e) {
+                        setLastSync('error');
+                      }
+                    }}
+                    disabled={!journey.startStation || !journey.endStation || !journey.departureTime || !journey.arrivalTime}
+                    className={`w-full h-16 rounded-[1.5rem] ${activeColor.bg} hover:brightness-110 text-black font-black text-lg shadow-[0_0_30px_rgba(0,0,0,0.3)] transition-all active:scale-95 disabled:opacity-20 mt-4`}
+                  >
+                    アラーム監視を開始
+                  </Button>
                 </div>
 
-                <Button
-                  onClick={async () => {
-                    setLastSync('syncing');
-                    try {
-                      await journey.startJourney();
-                      setLastSync('success');
-                      setTimeout(() => setLastSync('none'), 3000);
-                    } catch (e) {
-                      setLastSync('error');
-                    }
-                  }}
-                  disabled={!journey.startStation || !journey.endStation || !journey.departureTime || !journey.arrivalTime}
-                  className={`w-full h-16 rounded-[1.5rem] ${activeColor.bg} hover:brightness-110 text-black font-black text-lg shadow-[0_0_30px_rgba(0,0,0,0.3)] transition-all active:scale-95 disabled:opacity-20 mt-4`}
-                >
-                  START MONITORING
-                </Button>
-              </div>
-
-              {/* Info Card */}
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex gap-4 items-center">
-                <div className="bg-white/10 p-2 rounded-full">
-                  <Clock className="w-4 h-4 text-white/60" />
+                {/* Info Card */}
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex gap-4 items-center">
+                  <div className="bg-white/10 p-2 rounded-full">
+                    <Clock className="w-4 h-4 text-white/60" />
+                  </div>
+                  <p className="text-xs text-white/40 leading-relaxed font-medium">
+                    電車の時刻を入力してください。<span className="text-white/80 font-bold">目的地の一駅手前</span>で自動的に通知が届きます。
+                  </p>
                 </div>
-                <p className="text-xs text-white/40 leading-relaxed font-medium">
-                  Enter your train's scheduled times. The alarm will trigger automatically <span className="text-white/80 font-bold">one station before</span> your destination.
-                </p>
-              </div>
             </motion.div>
           ) : (
             <motion.div
@@ -220,30 +222,51 @@ export default function TrainAlarmPage() {
                     <div className="space-y-1">
                       <div className="text-4xl font-black tracking-tighter">{journey.departureTime}</div>
                       <div className="text-lg font-bold text-white/60">{journey.startStation?.name}</div>
-                      <div className="text-[10px] font-black text-white/20 uppercase tracking-widest">DEPARTURE</div>
+                      <div className="text-[10px] font-black text-white/20 uppercase tracking-widest">出発</div>
                     </div>
                     <div className="pt-4 flex flex-col items-center gap-1">
                       <div className="bg-white/5 p-2 rounded-full border border-white/10">
                         <ChevronRight className={`w-6 h-6 ${activeColor.text}`} />
                       </div>
                       {lastSync === 'syncing' && <div className="w-4 h-4 border-2 border-t-transparent border-blue-500 rounded-full animate-spin" />}
-                      {lastSync === 'success' && <div className="text-[8px] font-bold text-blue-400 animate-bounce">SYNCED</div>}
+                      {lastSync === 'success' && <div className="text-[8px] font-bold text-blue-400 animate-bounce">予約完了</div>}
                     </div>
                     <div className="text-right space-y-1">
                       <div className={`text-4xl font-black tracking-tighter ${activeColor.text}`}>{journey.arrivalTime}</div>
                       <div className="text-lg font-bold">{journey.endStation?.name}</div>
-                      <div className="text-[10px] font-black text-white/20 uppercase tracking-widest">ARRIVAL</div>
+                      <div className="text-[10px] font-black text-white/20 uppercase tracking-widest">到着</div>
+                    </div>
+                  </div>
+
+                  {/* Route Stations */}
+                  <div className="relative h-12 flex items-center justify-between px-2">
+                    <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-white/10 -translate-y-1/2" />
+                    {journey.routeStations.slice(0, 5).map((station, i) => (
+                      <div key={station.name} className="relative z-10 flex flex-col items-center">
+                        <div className={`w-2 h-2 rounded-full ${i === 0 ? activeColor.bg : 'bg-white/20'}`} />
+                        <span className="text-[8px] font-bold text-white/30 absolute top-4 whitespace-nowrap">{station.name}</span>
+                      </div>
+                    ))}
+                    {journey.routeStations.length > 5 && (
+                      <div className="relative z-10 flex flex-col items-center">
+                        <div className="w-2 h-2 rounded-full bg-white/20" />
+                        <span className="text-[8px] font-bold text-white/30 absolute top-4 whitespace-nowrap">...</span>
+                      </div>
+                    )}
+                    <div className="relative z-10 flex flex-col items-center">
+                      <div className="w-2 h-2 rounded-full bg-white/20" />
+                      <span className="text-[8px] font-bold text-white/30 absolute top-4 whitespace-nowrap">{journey.endStation?.name}</span>
                     </div>
                   </div>
 
                   <div className="flex flex-col items-center justify-center py-6 border-y border-white/5">
-                    <div className="text-sm font-bold text-white/30 uppercase tracking-[0.2em] mb-2">Estimated Alarm</div>
+                    <div className="text-sm font-bold text-white/30 uppercase tracking-[0.2em] mb-2">通知予定時刻</div>
                     <div className="text-5xl font-black tracking-tighter flex items-center gap-3">
                       <Bell className={`w-8 h-8 ${activeColor.text} animate-bounce`} />
                       {journey.calculatedAlarmTime?.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
                     </div>
                     <div className={`text-xs font-bold ${activeColor.text} opacity-50 mt-2`}>
-                      AT {journey.alarmStation?.name} STATION
+                      {journey.alarmStation?.name}駅 到着前
                     </div>
                   </div>
 
@@ -252,7 +275,7 @@ export default function TrainAlarmPage() {
                     variant="outline" 
                     className="w-full h-14 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white font-bold transition-all active:scale-95"
                   >
-                    CANCEL ALARM
+                    アラームを解除
                   </Button>
                 </div>
               </div>
@@ -265,22 +288,22 @@ export default function TrainAlarmPage() {
               >
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-sm font-bold text-white/40 uppercase tracking-widest">Monitoring Journey</span>
+                  <span className="text-sm font-bold text-white/40 uppercase tracking-widest">現在監視中...</span>
                 </div>
                 
                 <div className="flex flex-col items-center gap-2 mt-4 px-6 text-center">
                   {journey.isWakeLockActive ? (
                     <Badge variant="outline" className={`${activeColor.bg}/10 ${activeColor.text} ${activeColor.border}/20 py-1 px-4 rounded-full text-[10px] font-black`}>
-                      SLEEP PREVENTION ACTIVE
+                      スリープ防止機能 有効
                     </Badge>
                   ) : (
                     <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/20 py-1 px-4 rounded-full text-[10px] font-black">
-                      SLEEP PREVENTION INACTIVE
+                      スリープ防止機能 無効
                     </Badge>
                   )}
                   <p className="text-[10px] text-white/20 font-bold uppercase tracking-tighter leading-tight max-w-[240px]">
-                    Keep this tab open for the most reliable alarm. <br />
-                    Background notifications may be delayed by the OS.
+                    この画面を開いたままにするとより確実です。<br />
+                    バックグラウンド通知はOSにより遅れる場合があります。
                   </p>
                 </div>
               </motion.div>
@@ -307,20 +330,20 @@ export default function TrainAlarmPage() {
               <motion.div
                 animate={{ rotate: [0, 10, -10, 10, -10, 0] }}
                 transition={{ repeat: Infinity, duration: 0.5 }}
-                className="mb-6 flex justify-center"
+                className="flex justify-center mb-6"
               >
-                <Bell className="w-24 h-24" />
+                <Bell className="w-20 h-20" />
               </motion.div>
-              <h2 className="text-5xl font-black tracking-tighter mb-2">WAKE UP!</h2>
-              <p className="text-lg font-bold mb-8 opacity-80">
-                Approaching <span className="underline decoration-4">{journey.alarmStation?.name}</span>.<br />
-                Next is {journey.endStation?.name}.
+              <h2 className="text-3xl font-black mb-2">もうすぐ到着です！</h2>
+              <p className="text-sm font-bold opacity-70 mb-8 leading-relaxed">
+                {journey.alarmStation?.name}駅を通過しました。<br />
+                次は目的地の{journey.endStation?.name}駅です。
               </p>
-              <Button
+              <Button 
                 onClick={journey.stopJourney}
-                className="w-full h-20 rounded-[2rem] bg-black text-white hover:bg-black/90 text-xl font-black transition-all active:scale-95 shadow-2xl"
+                className="w-full h-16 rounded-2xl bg-black text-white font-black text-xl hover:bg-neutral-900 active:scale-95 transition-all"
               >
-                I'M AWAKE
+                了解しました
               </Button>
             </motion.div>
           </motion.div>

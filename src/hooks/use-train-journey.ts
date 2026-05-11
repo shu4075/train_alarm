@@ -14,6 +14,7 @@ export function useTrainJourney() {
   const [isAlarmActive, setIsAlarmActive] = useState(false);
   const [isWakeLockActive, setIsWakeLockActive] = useState(false);
   const [fcmToken, setFcmToken] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
   
   const notificationTriggered = useRef(false);
   const wakeLockRef = useRef<any>(null);
@@ -137,6 +138,32 @@ export function useTrainJourney() {
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [isStarted, requestWakeLock]);
+
+  // Update progress based on time
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isStarted && departureTime && arrivalTime) {
+      interval = setInterval(() => {
+        const now = new Date();
+        const [depH, depM] = departureTime.split(":").map(Number);
+        const [arrH, arrM] = arrivalTime.split(":").map(Number);
+        
+        const depDate = new Date();
+        depDate.setHours(depH, depM, 0, 0);
+        const arrDate = new Date();
+        arrDate.setHours(arrH, arrM, 0, 0);
+        
+        const total = arrDate.getTime() - depDate.getTime();
+        const current = now.getTime() - depDate.getTime();
+        
+        if (total > 0) {
+          const p = Math.max(0, Math.min(100, (current / total) * 100));
+          setProgress(p);
+        }
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isStarted, departureTime, arrivalTime]);
 
   // Request FCM Token
   useEffect(() => {
@@ -275,5 +302,6 @@ export function useTrainJourney() {
     alarmStation,
     isWakeLockActive,
     fcmToken,
+    progress,
   };
 }
