@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Station, CHUO_LINE_STATIONS } from "@/lib/stations";
-import { requestForToken, onMessageListener } from "@/lib/firebase";
 
 export function useTrainJourney() {
   const [startStation, setStartStation] = useState<Station | null>(null);
@@ -10,7 +9,6 @@ export function useTrainJourney() {
   const [departureTime, setDepartureTime] = useState("");
   const [arrivalTime, setArrivalTime] = useState("");
   const [isStarted, setIsStarted] = useState(false);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isAlarmActive, setIsAlarmActive] = useState(false);
   const [isWakeLockActive, setIsWakeLockActive] = useState(false);
   const [fcmToken, setFcmToken] = useState<string | null>(null);
@@ -18,6 +16,8 @@ export function useTrainJourney() {
   
   const notificationTriggered = useRef(false);
   const wakeLockRef = useRef<any>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const alarmAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Determine the route stations
   const routeStations = useMemo(() => {
@@ -34,7 +34,7 @@ export function useTrainJourney() {
 
   const alarmStation = useMemo(() => {
     if (routeStations.length < 2) return null;
-    return routeStations[routeStations.length - 2]; // One station before destination
+    return routeStations[routeStations.length - 2];
   }, [routeStations]);
 
   const calculatedAlarmTime = useMemo(() => {
@@ -59,73 +59,73 @@ export function useTrainJourney() {
     return new Date(alarmMs);
   }, [departureTime, arrivalTime, startStation, endStation, alarmStation]);
 
-
-  // Main tick for checking alarm
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (isStarted && calculatedAlarmTime) {
-        const now = new Date();
-        if (now >= calculatedAlarmTime) {
-          setIsAlarmActive(true);
-          
-          // Trigger Notification ONCE
-          if (!notificationTriggered.current) {
-            triggerNotification();
-            notificationTriggered.current = true;
-          }
-        }
-      }
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [isStarted, calculatedAlarmTime]);
-
-  // Wake Lock Management
+  // Wake Lock for screen persistence
   const requestWakeLock = useCallback(async () => {
     if (typeof window !== "undefined" && "wakeLock" in navigator) {
       try {
         wakeLockRef.current = await (navigator as any).wakeLock.request("screen");
         setIsWakeLockActive(true);
-        console.log("Wake Lock is active");
-        
-        wakeLockRef.current.addEventListener("release", () => {
-          setIsWakeLockActive(false);
-          console.log("Wake Lock was released");
-        });
       } catch (err) {
-        console.error(`${(err as Error).name}, ${(err as Error).message}`);
+        console.error("Wake Lock request failed:", err);
       }
     }
   }, []);
 
-  const releaseWakeLock = useCallback(() => {
-    if (wakeLockRef.current) {
-      wakeLockRef.current.release();
-      wakeLockRef.current = null;
-      setIsWakeLockActive(false);
-    }
-  }, []);
-
   useEffect(() => {
-    if (isStarted) {
-      requestWakeLock();
-    } else {
-      releaseWakeLock();
-    }
-    return () => releaseWakeLock();
-  }, [isStarted, requestWakeLock, releaseWakeLock]);
-
-  // Re-request wake lock when page becomes visible again
-  useEffect(() => {
+    if (isStarted) requestWakeLock();
     const handleVisibilityChange = () => {
-      if (wakeLockRef.current !== null && document.visibilityState === "visible" && isStarted) {
-        requestWakeLock();
-      }
+      if (isStarted && document.visibilityState === "visible") requestWakeLock();
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [isStarted, requestWakeLock]);
 
-  // Update progress based on time
+  // Audio setup
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const silentAudio = new Audio();
+      silentAudio.loop = true;
+      silentAudio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
+      audioRef.current = silentAudio;
+
+      const alarmAudio = new Audio();
+      alarmAudio.src = "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3";
+      alarmAudioRef.current = alarmAudio;
+    }
+  }, []);
+
+  const triggerAlarm = useCallback(async () => {
+    if (notificationTriggered.current) return;
+    notificationTriggered.current = true;
+    setIsAlarmActive(true);
+
+    if (alarmAudioRef.current) {
+      alarmAudioRef.current.play().catch(e => console.error("Alarm audio playback failed:", e));
+    }
+
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      const registration = await navigator.serviceWorker.ready;
+      registration.showNotification("🚆 到着1駅前です！", {
+        body: `${alarmStation?.name}駅を通過しました。${endStation?.name}駅への到着準備をしてください。`,
+        vibrate: [200, 100, 200, 100, 200, 100, 400],
+        tag: "train-alarm-notification",
+        requireInteraction: true,
+      } as any);
+    }
+  }, [alarmStation, endStation]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (isStarted && calculatedAlarmTime) {
+        const now = new Date();
+        if (now >= calculatedAlarmTime && !notificationTriggered.current) {
+          triggerAlarm();
+        }
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isStarted, calculatedAlarmTime, triggerAlarm]);
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isStarted && departureTime && arrivalTime) {
@@ -133,15 +133,13 @@ export function useTrainJourney() {
         const now = new Date();
         const [depH, depM] = departureTime.split(":").map(Number);
         const [arrH, arrM] = arrivalTime.split(":").map(Number);
-        
-        const depDate = new Date();
+        const depDate = new Date(now);
         depDate.setHours(depH, depM, 0, 0);
-        const arrDate = new Date();
+        const arrDate = new Date(now);
         arrDate.setHours(arrH, arrM, 0, 0);
-        
+        if (arrDate.getTime() < depDate.getTime()) arrDate.setDate(arrDate.getDate() + 1);
         const total = arrDate.getTime() - depDate.getTime();
         const current = now.getTime() - depDate.getTime();
-        
         if (total > 0) {
           const p = Math.max(0, Math.min(100, (current / total) * 100));
           setProgress(p);
@@ -151,122 +149,41 @@ export function useTrainJourney() {
     return () => clearInterval(interval);
   }, [isStarted, departureTime, arrivalTime]);
 
-  // Request FCM Token
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      requestForToken().then(token => {
-        if (token) setFcmToken(token);
-      });
-
-      onMessageListener().then((payload: any) => {
-        console.log("Foreground message: ", payload);
-        if (payload.notification) {
-          setIsAlarmActive(true);
-        }
-      });
-    }
-  }, []);
-
-  const triggerNotification = useCallback(async () => {
-    // 1. Local Notification (Existing logic)
-    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-      const registration = await navigator.serviceWorker.ready;
-      if (Notification.permission === "granted") {
-        registration.showNotification("🚆 TrainAlarm: Wake Up!", {
-          body: `Approaching ${alarmStation?.name || "the next station"}. Next is ${endStation?.name}.`,
-          icon: "/next.svg",
-          badge: "/next.svg",
-          tag: "train-alarm",
-          requireInteraction: true,
-          vibrate: [200, 100, 200],
-        } as any);
-      }
-    }
-
-    // 2. Server-side Push (New logic for background reliability)
-    if (fcmToken) {
-      try {
-        await fetch("/api/notify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            token: fcmToken,
-            title: "🚆 TrainAlarm: Wake Up!",
-            body: `Approaching ${alarmStation?.name || "the next station"}. Next is ${endStation?.name}.`,
-          }),
-        });
-      } catch (err) {
-        console.error("Failed to send server-side push:", err);
-      }
-    }
-  }, [alarmStation, endStation, fcmToken]);
-
-  const testNotification = async () => {
-    if (typeof window !== "undefined" && "Notification" in window) {
-      const permission = await Notification.requestPermission();
-      if (permission !== "granted") {
-        alert("Notification permission denied. Please enable it in your browser settings.");
-        return;
-      }
-    }
-
-    if (fcmToken) {
-      try {
-        await fetch("/api/notify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            token: fcmToken,
-            title: "🔔 Test Push Notification",
-            body: "FCM server-side push is working!",
-          }),
-        });
-      } catch (err) {
-        console.error("Failed to send test push:", err);
-      }
-    }
-
-    // Also show local test
-    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-      const registration = await navigator.serviceWorker.ready;
-      registration.showNotification("🔔 Test Local Notification", {
-        body: "Local SW notification is working!",
-        icon: "/next.svg",
-      } as any);
-    }
-  };
-
   const startJourney = useCallback(async () => {
     setIsAlarmActive(false);
     notificationTriggered.current = false;
     setIsStarted(true);
-
-    // Schedule background notification on server
-    if (fcmToken && calculatedAlarmTime) {
-      try {
-        await fetch("/api/schedule", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            token: fcmToken,
-            alarmTime: calculatedAlarmTime.getTime(),
-            title: "🚆 TrainAlarm: Wake Up!",
-            body: `Approaching ${alarmStation?.name || "the next station"}. Next is ${endStation?.name}.`,
-          }),
-        });
-        console.log("Alarm scheduled on server");
-      } catch (err) {
-        console.error("Failed to schedule alarm on server:", err);
-      }
+    if (audioRef.current) {
+      audioRef.current.play().catch(e => console.error("Audio playback error:", e));
     }
-  }, [fcmToken, calculatedAlarmTime, alarmStation, endStation]);
+  }, []);
 
   const stopJourney = useCallback(() => {
     setIsStarted(false);
     setIsAlarmActive(false);
     notificationTriggered.current = false;
-    setElapsedSeconds(0);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    if (alarmAudioRef.current) {
+      alarmAudioRef.current.pause();
+      alarmAudioRef.current.currentTime = 0;
+    }
   }, []);
+
+  const testNotification = async () => {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      await Notification.requestPermission();
+    }
+    if (alarmAudioRef.current) {
+      alarmAudioRef.current.play().catch(e => console.error("Test playback failed:", e));
+      setTimeout(() => {
+        alarmAudioRef.current?.pause();
+        if (alarmAudioRef.current) alarmAudioRef.current.currentTime = 0;
+      }, 2000);
+    }
+  };
 
   return {
     startStation,
@@ -279,7 +196,6 @@ export function useTrainJourney() {
     setArrivalTime,
     isStarted,
     calculatedAlarmTime,
-    progress,
     isAlarmActive,
     startJourney,
     stopJourney,
@@ -288,5 +204,6 @@ export function useTrainJourney() {
     alarmStation,
     isWakeLockActive,
     fcmToken,
+    progress,
   };
 }
