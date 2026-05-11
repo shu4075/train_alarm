@@ -59,20 +59,6 @@ export function useTrainJourney() {
     return new Date(alarmMs);
   }, [departureTime, arrivalTime, startStation, endStation, alarmStation]);
 
-  const progress = useMemo(() => {
-    if (!isStarted || !departureTime || !arrivalTime) return 0;
-    const [depH, depM] = departureTime.split(":").map(Number);
-    const [arrH, arrM] = arrivalTime.split(":").map(Number);
-    const now = new Date();
-    const depDate = new Date(now);
-    depDate.setHours(depH, depM, 0, 0);
-    const arrDate = new Date(now);
-    arrDate.setHours(arrH, arrM, 0, 0);
-    if (arrDate.getTime() < depDate.getTime()) arrDate.setDate(arrDate.getDate() + 1);
-    const total = arrDate.getTime() - depDate.getTime();
-    const current = now.getTime() - depDate.getTime();
-    return Math.max(0, Math.min(100, (current / total) * 100));
-  }, [isStarted, departureTime, arrivalTime]);
 
   // Main tick for checking alarm
   useEffect(() => {
