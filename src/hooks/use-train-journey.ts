@@ -288,6 +288,5 @@ export function useTrainJourney() {
     alarmStation,
     isWakeLockActive,
     fcmToken,
-    progress,
   };
 }
