@@ -41,9 +41,12 @@ export default function TrainAlarmPage() {
         {/* Header */}
         <header className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
-              TrainAlarm
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
+                TrainAlarm
+              </h1>
+              <span className="text-yellow-400 text-2xl animate-pulse">★</span>
+            </div>
             <p className="text-white/40 text-sm">
               {new Date().toLocaleDateString('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' })}
             </p>
@@ -287,7 +290,17 @@ export default function TrainAlarmPage() {
               >
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-sm font-bold text-white/40 uppercase tracking-widest">現在監視中...</span>
+                  <span className="text-sm font-bold text-white/40 uppercase tracking-widest">バックグラウンド維持モード</span>
+                  <div className="flex items-center gap-1 h-4">
+                    {[...Array(5)].map((_, i) => (
+                      <motion.div
+                        key={i}
+                        animate={{ height: [4, 16, 4] }}
+                        transition={{ repeat: Infinity, duration: 0.5, delay: i * 0.1 }}
+                        className="w-1 bg-green-500/50 rounded-full"
+                      />
+                    ))}
+                  </div>
                 </div>
                 
                 <div className="flex flex-col items-center gap-2 mt-4 px-6 text-center">
