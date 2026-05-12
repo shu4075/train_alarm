@@ -117,8 +117,8 @@ export default function TrainAlarmPage() {
                         className={`w-full bg-neutral-900/80 text-white border border-white/10 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 ${activeColor.ring} transition-all`}
                         style={{ colorScheme: 'dark' }}
                       >
-                        <option value="" disabled className="bg-neutral-900 text-white/50">出発駅を選択</option>
-                        {CHUO_LINE_STATIONS.map(s => <option key={s.name} value={s.name} className="bg-neutral-900 text-white">{s.name}</option>)}
+                        <option value="" disabled>出発駅を選択</option>
+                        {CHUO_LINE_STATIONS.map(s => <option key={s.name} value={s.name}>{s.name}</option>)}
                       </select>
                       <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 pointer-events-none" />
                     </div>
@@ -138,8 +138,8 @@ export default function TrainAlarmPage() {
                         className={`w-full bg-neutral-900/80 text-white border border-white/10 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 ${activeColor.ring} transition-all`}
                         style={{ colorScheme: 'dark' }}
                       >
-                        <option value="" disabled className="bg-neutral-900 text-white/50">目的駅を選択</option>
-                        {CHUO_LINE_STATIONS.map(s => <option key={s.name} value={s.name} className="bg-neutral-900 text-white">{s.name}</option>)}
+                        <option value="" disabled>目的駅を選択</option>
+                        {CHUO_LINE_STATIONS.map(s => <option key={s.name} value={s.name}>{s.name}</option>)}
                       </select>
                       <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 pointer-events-none" />
                     </div>
