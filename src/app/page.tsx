@@ -114,10 +114,10 @@ export default function TrainAlarmPage() {
                           const s = CHUO_LINE_STATIONS.find(st => st.name === e.target.value);
                           if (s) journey.setStartStation(s);
                         }}
-                        className={`w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 ${activeColor.ring} transition-all`}
+                        className={`w-full bg-neutral-900/80 text-white border border-white/10 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 ${activeColor.ring} transition-all`}
                       >
-                        <option value="" disabled>出発駅を選択</option>
-                        {CHUO_LINE_STATIONS.map(s => <option key={s.name} value={s.name}>{s.name}</option>)}
+                        <option value="" disabled className="bg-neutral-900 text-white/50">出発駅を選択</option>
+                        {CHUO_LINE_STATIONS.map(s => <option key={s.name} value={s.name} className="bg-neutral-900 text-white">{s.name}</option>)}
                       </select>
                       <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 pointer-events-none" />
                     </div>
@@ -134,10 +134,10 @@ export default function TrainAlarmPage() {
                           const s = CHUO_LINE_STATIONS.find(st => st.name === e.target.value);
                           if (s) journey.setEndStation(s);
                         }}
-                        className={`w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 ${activeColor.ring} transition-all`}
+                        className={`w-full bg-neutral-900/80 text-white border border-white/10 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 ${activeColor.ring} transition-all`}
                       >
-                        <option value="" disabled>目的駅を選択</option>
-                        {CHUO_LINE_STATIONS.map(s => <option key={s.name} value={s.name}>{s.name}</option>)}
+                        <option value="" disabled className="bg-neutral-900 text-white/50">目的駅を選択</option>
+                        {CHUO_LINE_STATIONS.map(s => <option key={s.name} value={s.name} className="bg-neutral-900 text-white">{s.name}</option>)}
                       </select>
                       <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 pointer-events-none" />
                     </div>
@@ -152,7 +152,8 @@ export default function TrainAlarmPage() {
                         type="time"
                         value={journey.departureTime}
                         onChange={(e) => journey.setDepartureTime(e.target.value)}
-                        className={`w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 ${activeColor.ring} transition-all`}
+                        className={`w-full bg-neutral-900/80 text-white border border-white/10 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 ${activeColor.ring} transition-all`}
+                        style={{ colorScheme: 'dark' }}
                       />
                     </div>
                     <div className="space-y-2">
@@ -163,7 +164,8 @@ export default function TrainAlarmPage() {
                         type="time"
                         value={journey.arrivalTime}
                         onChange={(e) => journey.setArrivalTime(e.target.value)}
-                        className={`w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 ${activeColor.ring} transition-all`}
+                        className={`w-full bg-neutral-900/80 text-white border border-white/10 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 ${activeColor.ring} transition-all`}
+                        style={{ colorScheme: 'dark' }}
                       />
                     </div>
                   </div>
@@ -192,7 +194,7 @@ export default function TrainAlarmPage() {
                     <Clock className="w-4 h-4 text-white/60" />
                   </div>
                   <p className="text-xs text-white/40 leading-relaxed font-medium">
-                    電車の時刻を入力してください。<span className="text-white/80 font-bold">目的地の一駅手前</span>で自動的に通知が届きます。
+                    電車の時刻を入力してください。<span className="text-white/80 font-bold">到着時刻の3分前</span>に自動的に通知が届きます。
                   </p>
                 </div>
             </motion.div>
@@ -268,7 +270,7 @@ export default function TrainAlarmPage() {
                       {journey.calculatedAlarmTime?.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
                     </div>
                     <div className={`text-xs font-bold ${activeColor.text} opacity-50 mt-2`}>
-                      {journey.alarmStation?.name}駅 到着前
+                      到着3分前
                     </div>
                   </div>
 
@@ -348,8 +350,7 @@ export default function TrainAlarmPage() {
               </motion.div>
               <h2 className="text-3xl font-black mb-2">もうすぐ到着です！</h2>
               <p className="text-sm font-bold opacity-70 mb-8 leading-relaxed">
-                {journey.alarmStation?.name}駅を通過しました。<br />
-                次は目的地の{journey.endStation?.name}駅です。
+                もうすぐ目的地の{journey.endStation?.name}駅に到着します。
               </p>
               <Button 
                 onClick={journey.stopJourney}

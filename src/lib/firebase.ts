@@ -16,27 +16,32 @@ const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
 export const requestForToken = async () => {
   try {
-    const messaging = getMessaging(app);
-    const currentToken = await getToken(messaging, {
-      vapidKey: "BISzefV0yam6m-Wae68SPJ2uo8z8Us3LMEFpqc8_AFyTkNjBTGeoY_C7tZVkW7axWDfQbcKKX7QSiCgC92AYexQ"
-    });
-    if (currentToken) {
-      console.log('current token for client: ', currentToken);
-      return currentToken;
-    } else {
-      console.log('No registration token available. Request permission to generate one.');
+    if (typeof window !== "undefined" && 'serviceWorker' in navigator) {
+      const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      const messaging = getMessaging(app);
+      const currentToken = await getToken(messaging, {
+        vapidKey: "BISzefV0yam6m-Wae68SPJ2uo8z8Us3LMEFpqc8_AFyTkNjBTGeoY_C7tZVkW7axWDfQbcKKX7QSiCgC92AYexQ",
+        serviceWorkerRegistration: registration
+      });
+      if (currentToken) {
+        console.log('current token for client: ', currentToken);
+        return currentToken;
+      } else {
+        console.log('No registration token available. Request permission to generate one.');
+      }
     }
   } catch (err) {
     console.log('An error occurred while retrieving token. ', err);
   }
+  return null;
 };
 
-export const onMessageListener = () =>
-  new Promise((resolve) => {
+export const onMessageListener = (callback: (payload: any) => void) => {
+  if (typeof window !== "undefined") {
     const messaging = getMessaging(app);
-    onMessage(messaging, (payload) => {
-      resolve(payload);
-    });
-  });
+    return onMessage(messaging, callback);
+  }
+  return () => {}; // return a no-op function for unsubscribe
+};
 
 export default app;

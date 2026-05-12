@@ -25,3 +25,14 @@ messaging.onBackgroundMessage((payload) => {
 
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
+
+self.addEventListener('notificationclick', function(event) {
+  event.notification.close();
+  event.waitUntil(
+    clients.openWindow('/')
+  );
+});
+
+self.addEventListener('fetch', function(event) {
+  // Empty fetch handler is enough for "Add to Home Screen" to work in some browsers
+});

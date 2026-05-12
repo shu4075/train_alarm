@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Station, CHUO_LINE_STATIONS } from "@/lib/stations";
+import { requestForToken, onMessageListener } from "@/lib/firebase";
 
 export function useTrainJourney() {
   const [startStation, setStartStation] = useState<Station | null>(null);
@@ -38,7 +39,7 @@ export function useTrainJourney() {
   }, [routeStations]);
 
   const calculatedAlarmTime = useMemo(() => {
-    if (!departureTime || !arrivalTime || !startStation || !endStation || !alarmStation) return null;
+    if (!departureTime || !arrivalTime || !startStation || !endStation) return null;
 
     const [depH, depM] = departureTime.split(":").map(Number);
     const [arrH, arrM] = arrivalTime.split(":").map(Number);
@@ -50,14 +51,10 @@ export function useTrainJourney() {
     arrDate.setHours(arrH, arrM, 0, 0);
     if (arrDate.getTime() < depDate.getTime()) arrDate.setDate(arrDate.getDate() + 1);
 
-    const totalDurationMs = arrDate.getTime() - depDate.getTime();
-    const totalDist = Math.abs(endStation.timeFromStart - startStation.timeFromStart);
-    const alarmDist = Math.abs(alarmStation.timeFromStart - startStation.timeFromStart);
-    const ratio = alarmDist / totalDist;
-
-    const alarmMs = depDate.getTime() + (totalDurationMs * ratio);
+    // アラームは到着時刻の3分前に設定
+    const alarmMs = arrDate.getTime() - (3 * 60 * 1000);
     return new Date(alarmMs);
-  }, [departureTime, arrivalTime, startStation, endStation, alarmStation]);
+  }, [departureTime, arrivalTime, startStation, endStation]);
 
   // Wake Lock for screen persistence
   const requestWakeLock = useCallback(async () => {
@@ -115,6 +112,18 @@ export function useTrainJourney() {
   }, [alarmStation, endStation]);
 
   useEffect(() => {
+    const unsubscribe = onMessageListener((payload) => {
+      console.log("Foreground message received:", payload);
+      triggerAlarm();
+    });
+    return () => {
+      if (unsubscribe && typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
+    };
+  }, [triggerAlarm]);
+
+  useEffect(() => {
     const interval = setInterval(() => {
       if (isStarted && calculatedAlarmTime) {
         const now = new Date();
@@ -156,7 +165,32 @@ export function useTrainJourney() {
     if (audioRef.current) {
       audioRef.current.play().catch(e => console.error("Audio playback error:", e));
     }
-  }, []);
+
+    if (typeof window !== "undefined" && "Notification" in window) {
+      await Notification.requestPermission();
+    }
+
+    const token = await requestForToken();
+    if (token) {
+      setFcmToken(token);
+      if (calculatedAlarmTime && alarmStation) {
+        try {
+          await fetch('/api/schedule', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              token,
+              alarmTime: calculatedAlarmTime.getTime(),
+              title: "🚆 到着1駅前です！",
+              body: `${alarmStation.name}駅を通過しました。${endStation?.name}駅への到着準備をしてください。`
+            }),
+          });
+        } catch (e) {
+          console.error("Failed to schedule alarm on server", e);
+        }
+      }
+    }
+  }, [calculatedAlarmTime, alarmStation, endStation]);
 
   const stopJourney = useCallback(() => {
     setIsStarted(false);
@@ -176,6 +210,25 @@ export function useTrainJourney() {
     if (typeof window !== "undefined" && "Notification" in window) {
       await Notification.requestPermission();
     }
+
+    const token = await requestForToken();
+    if (token) {
+      setFcmToken(token);
+      try {
+        await fetch('/api/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token,
+            title: "🔔 テスト通知",
+            body: "通知は正常に機能しています！"
+          })
+        });
+      } catch (e) {
+        console.error("Push test failed:", e);
+      }
+    }
+
     if (alarmAudioRef.current) {
       alarmAudioRef.current.play().catch(e => console.error("Test playback failed:", e));
       setTimeout(() => {
