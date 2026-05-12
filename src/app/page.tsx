@@ -30,11 +30,11 @@ export default function TrainAlarmPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white selection:bg-orange-500/30 overflow-hidden font-sans">
+    <main className="min-h-screen bg-white text-gray-900 selection:bg-orange-500/20 overflow-hidden font-sans">
       {/* Dynamic Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-orange-500/10 blur-[120px] rounded-full animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/10 blur-[120px] rounded-full" />
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-orange-100/60 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-100/60 blur-[120px] rounded-full" />
       </div>
 
       <div className="relative z-10 max-w-lg mx-auto px-6 pt-12 pb-24">
@@ -42,12 +42,12 @@ export default function TrainAlarmPage() {
         <header className="mb-8 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
+              <h1 className="text-3xl font-bold tracking-tight text-gray-900">
                 TrainAlarm
               </h1>
-              <span className="text-yellow-400 text-2xl animate-pulse">★</span>
+              <span className="text-yellow-500 text-2xl animate-pulse">★</span>
             </div>
-            <p className="text-white/40 text-sm">
+            <p className="text-gray-400 text-sm">
               {new Date().toLocaleDateString('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' })}
             </p>
           </div>
@@ -56,11 +56,11 @@ export default function TrainAlarmPage() {
               variant="outline" 
               size="sm"
               onClick={journey.testNotification}
-              className={`text-[10px] font-black tracking-widest ${journey.fcmToken ? 'border-green-500/50 text-green-500' : 'border-white/20 text-white/60'} rounded-full px-4`}
+              className={`text-[10px] font-black tracking-widest ${journey.fcmToken ? 'border-green-500 text-green-600' : 'border-gray-300 text-gray-500'} rounded-full px-4`}
             >
               {journey.fcmToken ? 'NOTIFICATIONS ON' : 'ENABLE NOTIFICATIONS'}
             </Button>
-            <div className={`h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center backdrop-blur-md`}>
+            <div className={`h-10 w-10 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center`}>
               <Train className={`w-5 h-5 ${activeColor.text}`} />
             </div>
           </div>
@@ -87,7 +87,7 @@ export default function TrainAlarmPage() {
             <button
               key={color}
               onClick={() => setAccentColor(color)}
-              className={`w-6 h-6 rounded-full ${colorMap[color as keyof typeof colorMap].bg} ${accentColor === color ? 'ring-2 ring-white ring-offset-2 ring-offset-black' : 'opacity-40'}`}
+              className={`w-6 h-6 rounded-full ${colorMap[color as keyof typeof colorMap].bg} ${accentColor === color ? 'ring-2 ring-gray-700 ring-offset-2 ring-offset-white' : 'opacity-40'}`}
             />
           ))}
         </div>
@@ -104,7 +104,7 @@ export default function TrainAlarmPage() {
               {/* Station Selection */}
               <div className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
                       出発駅
                     </label>
                     <div className="relative">
@@ -114,18 +114,18 @@ export default function TrainAlarmPage() {
                           const s = CHUO_LINE_STATIONS.find(st => st.name === e.target.value);
                           if (s) journey.setStartStation(s);
                         }}
-                        className={`w-full bg-neutral-900/80 text-white border border-white/10 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 ${activeColor.ring} transition-all`}
-                        style={{ colorScheme: 'dark' }}
+                        className={`w-full bg-gray-50 text-gray-900 border border-gray-200 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 ${activeColor.ring} transition-all`}
+                        style={{ colorScheme: 'light' }}
                       >
                         <option value="" disabled>出発駅を選択</option>
                         {CHUO_LINE_STATIONS.map(s => <option key={s.name} value={s.name}>{s.name}</option>)}
                       </select>
-                      <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 pointer-events-none" />
+                      <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 pointer-events-none" />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
                       目的駅
                     </label>
                     <div className="relative">
@@ -135,39 +135,39 @@ export default function TrainAlarmPage() {
                           const s = CHUO_LINE_STATIONS.find(st => st.name === e.target.value);
                           if (s) journey.setEndStation(s);
                         }}
-                        className={`w-full bg-neutral-900/80 text-white border border-white/10 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 ${activeColor.ring} transition-all`}
-                        style={{ colorScheme: 'dark' }}
+                        className={`w-full bg-gray-50 text-gray-900 border border-gray-200 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 ${activeColor.ring} transition-all`}
+                        style={{ colorScheme: 'light' }}
                       >
                         <option value="" disabled>目的駅を選択</option>
                         {CHUO_LINE_STATIONS.map(s => <option key={s.name} value={s.name}>{s.name}</option>)}
                       </select>
-                      <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 pointer-events-none" />
+                      <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 pointer-events-none" />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
                         発車時刻
                       </label>
                       <input
                         type="time"
                         value={journey.departureTime}
                         onChange={(e) => journey.setDepartureTime(e.target.value)}
-                        className={`w-full bg-neutral-900/80 text-white border border-white/10 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 ${activeColor.ring} transition-all`}
-                        style={{ colorScheme: 'dark' }}
+                        className={`w-full bg-gray-50 text-gray-900 border border-gray-200 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 ${activeColor.ring} transition-all`}
+                        style={{ colorScheme: 'light' }}
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
                         到着時刻
                       </label>
                       <input
                         type="time"
                         value={journey.arrivalTime}
                         onChange={(e) => journey.setArrivalTime(e.target.value)}
-                        className={`w-full bg-neutral-900/80 text-white border border-white/10 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 ${activeColor.ring} transition-all`}
-                        style={{ colorScheme: 'dark' }}
+                        className={`w-full bg-gray-50 text-gray-900 border border-gray-200 rounded-2xl px-4 py-4 text-xl font-black appearance-none focus:outline-none focus:ring-2 ${activeColor.ring} transition-all`}
+                        style={{ colorScheme: 'light' }}
                       />
                     </div>
                   </div>
@@ -191,12 +191,12 @@ export default function TrainAlarmPage() {
                 </div>
 
                 {/* Info Card */}
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex gap-4 items-center">
-                  <div className="bg-white/10 p-2 rounded-full">
-                    <Clock className="w-4 h-4 text-white/60" />
+                <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex gap-4 items-center">
+                  <div className="bg-gray-200 p-2 rounded-full">
+                    <Clock className="w-4 h-4 text-gray-500" />
                   </div>
-                  <p className="text-xs text-white/40 leading-relaxed font-medium">
-                    電車の時刻を入力してください。<span className="text-white/80 font-bold">到着時刻の3分前</span>に自動的に通知が届きます。
+                  <p className="text-xs text-gray-400 leading-relaxed font-medium">
+                    電車の時刻を入力してください。<span className="text-gray-700 font-bold">到着時刻の3分前</span>に自動的に通知が届きます。
                   </p>
                 </div>
             </motion.div>
@@ -209,7 +209,7 @@ export default function TrainAlarmPage() {
               className="space-y-8"
             >
               {/* Journey Card */}
-              <div className="bg-gradient-to-br from-neutral-900 to-black border border-white/10 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-[2.5rem] p-8 shadow-lg relative overflow-hidden">
                 {/* Status Aura Glow */}
                 <div className={`absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[80px] opacity-30 transition-all duration-1000 ${
                   lastSync === 'success' ? 'bg-blue-500' : journey.fcmToken ? 'bg-green-500' : 'bg-red-500'
@@ -226,12 +226,12 @@ export default function TrainAlarmPage() {
                 <div className="space-y-8">
                   <div className="flex justify-between items-start">
                     <div className="space-y-1">
-                      <div className="text-4xl font-black tracking-tighter">{journey.departureTime}</div>
-                      <div className="text-lg font-bold text-white/60">{journey.startStation?.name}</div>
-                      <div className="text-[10px] font-black text-white/20 uppercase tracking-widest">出発</div>
+                      <div className="text-4xl font-black tracking-tighter text-gray-900">{journey.departureTime}</div>
+                      <div className="text-lg font-bold text-gray-500">{journey.startStation?.name}</div>
+                      <div className="text-[10px] font-black text-gray-300 uppercase tracking-widest">出発</div>
                     </div>
                     <div className="pt-4 flex flex-col items-center gap-1">
-                      <div className="bg-white/5 p-2 rounded-full border border-white/10">
+                      <div className="bg-gray-100 p-2 rounded-full border border-gray-200">
                         <ChevronRight className={`w-6 h-6 ${activeColor.text}`} />
                       </div>
                       {lastSync === 'syncing' && <div className="w-4 h-4 border-2 border-t-transparent border-blue-500 rounded-full animate-spin" />}
@@ -239,35 +239,35 @@ export default function TrainAlarmPage() {
                     </div>
                     <div className="text-right space-y-1">
                       <div className={`text-4xl font-black tracking-tighter ${activeColor.text}`}>{journey.arrivalTime}</div>
-                      <div className="text-lg font-bold">{journey.endStation?.name}</div>
-                      <div className="text-[10px] font-black text-white/20 uppercase tracking-widest">到着</div>
+                      <div className="text-lg font-bold text-gray-900">{journey.endStation?.name}</div>
+                      <div className="text-[10px] font-black text-gray-300 uppercase tracking-widest">到着</div>
                     </div>
                   </div>
 
                   {/* Route Stations */}
                   <div className="relative h-12 flex items-center justify-between px-2">
-                    <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-white/10 -translate-y-1/2" />
+                    <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-200 -translate-y-1/2" />
                     {journey.routeStations.slice(0, 5).map((station, i) => (
                       <div key={station.name} className="relative z-10 flex flex-col items-center">
-                        <div className={`w-2 h-2 rounded-full ${i === 0 ? activeColor.bg : 'bg-white/20'}`} />
-                        <span className="text-[8px] font-bold text-white/30 absolute top-4 whitespace-nowrap">{station.name}</span>
+                        <div className={`w-2 h-2 rounded-full ${i === 0 ? activeColor.bg : 'bg-gray-300'}`} />
+                        <span className="text-[8px] font-bold text-gray-400 absolute top-4 whitespace-nowrap">{station.name}</span>
                       </div>
                     ))}
                     {journey.routeStations.length > 5 && (
                       <div className="relative z-10 flex flex-col items-center">
-                        <div className="w-2 h-2 rounded-full bg-white/20" />
-                        <span className="text-[8px] font-bold text-white/30 absolute top-4 whitespace-nowrap">...</span>
+                        <div className="w-2 h-2 rounded-full bg-gray-300" />
+                        <span className="text-[8px] font-bold text-gray-400 absolute top-4 whitespace-nowrap">...</span>
                       </div>
                     )}
                     <div className="relative z-10 flex flex-col items-center">
-                      <div className="w-2 h-2 rounded-full bg-white/20" />
-                      <span className="text-[8px] font-bold text-white/30 absolute top-4 whitespace-nowrap">{journey.endStation?.name}</span>
+                      <div className="w-2 h-2 rounded-full bg-gray-300" />
+                      <span className="text-[8px] font-bold text-gray-400 absolute top-4 whitespace-nowrap">{journey.endStation?.name}</span>
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-center justify-center py-6 border-y border-white/5">
-                    <div className="text-sm font-bold text-white/30 uppercase tracking-[0.2em] mb-2">通知予定時刻</div>
-                    <div className="text-5xl font-black tracking-tighter flex items-center gap-3">
+                  <div className="flex flex-col items-center justify-center py-6 border-y border-gray-100">
+                    <div className="text-sm font-bold text-gray-400 uppercase tracking-[0.2em] mb-2">通知予定時刻</div>
+                    <div className="text-5xl font-black tracking-tighter flex items-center gap-3 text-gray-900">
                       <Bell className={`w-8 h-8 ${activeColor.text} animate-bounce`} />
                       {journey.calculatedAlarmTime?.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}
                     </div>
@@ -279,7 +279,7 @@ export default function TrainAlarmPage() {
                   <Button 
                     onClick={journey.stopJourney}
                     variant="outline" 
-                    className="w-full h-14 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white font-bold transition-all active:scale-95"
+                    className="w-full h-14 rounded-2xl border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold transition-all active:scale-95"
                   >
                     アラームを解除
                   </Button>
@@ -294,7 +294,7 @@ export default function TrainAlarmPage() {
               >
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-sm font-bold text-white/40 uppercase tracking-widest">バックグラウンド維持モード</span>
+                  <span className="text-sm font-bold text-gray-400 uppercase tracking-widest">バックグラウンド維持モード</span>
                   <div className="flex items-center gap-1 h-4">
                     {[...Array(5)].map((_, i) => (
                       <motion.div
@@ -317,7 +317,7 @@ export default function TrainAlarmPage() {
                       スリープ防止機能 無効
                     </Badge>
                   )}
-                  <p className="text-[10px] text-white/20 font-bold uppercase tracking-tighter leading-tight max-w-[240px]">
+                  <p className="text-[10px] text-gray-300 font-bold uppercase tracking-tighter leading-tight max-w-[240px]">
                     この画面を開いたままにするとより確実です。<br />
                     バックグラウンド通知はOSにより遅れる場合があります。
                   </p>
